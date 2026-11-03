@@ -1,0 +1,5 @@
+data/
+testing_images/
+.ipynb_checkpoints/
+*.pt
+*.pkl
