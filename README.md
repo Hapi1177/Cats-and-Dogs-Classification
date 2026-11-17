@@ -68,6 +68,31 @@ An earlier run applied ImageNet normalization to training images only, so the mo
 
 The saved checkpoint was reloaded and used to classify 8 new images from `testing_images/`, writing the results to `predictions.csv`. Four were predicted as cats and four as dogs. Seven had a confidence of 1.000 after rounding, and one was at 0.969.
 
+## Deployment
+
+The chosen ResNet-18 is served in a Streamlit web app in the `deployment/` folder. `app.py` loads `resnet18_best.pt` on the CPU and applies the same 224×224 resize and ImageNet normalization used for validation and testing.
+
+**Features**
+
+- **Image upload:** accepts JPG, JPEG, PNG and WebP images.
+- **Prediction:** shows the predicted class and its confidence.
+- **Probability chart:** a bar chart shows the probability for each class.
+- **CPU inference:** the GPU-trained checkpoint is mapped to the CPU, so the app runs on hosts without a GPU.
+
+### Example predictions
+
+A real cat photo is classified as a cat with 99.9% confidence.
+
+![Cat photo predicted as Cat with 99.9% confidence](deployment/docs/Cat%20Prediction.png)
+
+A dog photo is classified as a dog with 100.0% confidence after rounding.
+
+![Dog photo predicted as Dog with 100.0% confidence](deployment/docs/Dog%20prediction.png)
+
+A cartoon cat is still classified as a cat, but with only 56.8% confidence. The model was trained on photos only, so drawings fall outside what it has seen.
+
+![Cartoon cat predicted as Cat with 56.8% confidence](deployment/docs/Cat%20Prediction%202.png)
+
 ## Limitations and next steps
 
 - **Error analysis:** review the 51 misclassified test images for label errors and hard cases.
@@ -77,14 +102,19 @@ The saved checkpoint was reloaded and used to classify 8 new images from `testin
 
 ```
 ├── Cats-and-Dogs-Classification.ipynb
-├── requirements.txt
-├── resnet18_best.pt       # created by the notebook
-├── predictions.csv        # created by the notebook
-├── assets/                # README images
-├── testing_images/        # new images for inference
-└── data/
-    ├── Cat/
-    └── Dog/
+├── requirements.txt           # notebook requirements
+├── resnet18_best.pt           # created by the notebook
+├── predictions.csv            # created by the notebook
+├── assets/                    # README images
+├── testing_images/            # new images for inference
+├── data/
+│   ├── Cat/
+│   └── Dog/
+└── deployment/
+    ├── app.py                 # Streamlit app
+    ├── resnet18_best.pt       # copy of the saved checkpoint
+    ├── requirements.txt       # app requirements (CPU PyTorch)
+    └── docs/                  # app screenshots
 ```
 
 ## How to run
@@ -93,3 +123,15 @@ The saved checkpoint was reloaded and used to classify 8 new images from `testin
 2. Open `Cats-and-Dogs-Classification.ipynb` and run all cells.
 
 The first cell reinstalls PyTorch from the CUDA 13.4 wheels, so change its index URL if your hardware differs. The results here used an NVIDIA GPU with Python 3.14.
+
+### Run the app
+
+Requires Python 3.11 or newer. The app uses its own `requirements.txt`, which installs the smaller CPU build of PyTorch, and the copy of the checkpoint inside `deployment/`.
+
+```
+cd deployment
+python -m pip install -r requirements.txt
+python -m streamlit run app.py
+```
+
+The app opens at `http://localhost:8501`.
